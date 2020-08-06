@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const toyName = document.querySelector('.add-toy-form')[0]
   const toyImage = document.querySelector('.add-toy-form')[1]
   const toysUrl = "http://localhost:3000/toys"
+  const likeButton = document.getElementsByClassName("like-btn")
   
 
     const fetchToys = () => {
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const renderToy = (toy) => {
       const toyCard = document.createElement('div')
+      toyCard.dataset.id = toy.id 
       toyCard.className = 'card'
       toyCard.innerHTML =
         `<h2>${toy.name}</h2>
@@ -34,10 +36,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener('submit', function(e) {
     e.preventDefault()
-    console.log(e.target)
+  
+    const name = e.target[0].value
+    const image = e.target[1].value 
+    newToy(name, image)
+    
+
+  function newToy(name, image) {
+    fetch(toysUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        "name": name,
+        "image": image,
+        "likes": 0
+      }),
+      headers: {
+          "Content-type": "application/json",
+          "Accept": "application/json"
+      }
+  })
+  .then(response => response.json())
+  .then(toy => renderToy(toy));
+  }
   })
 
+  document.addEventListener('click', function(e) {
+    if (e.target.className === "like-btn") {
+      let el = event.target.parentElement
+      let p = el.childNodes[4]
+      console.log(p)
+      p.innerText = `${parseInt(p.innerText) + 1} likes`
+      //debugger;
+    }
+  })
 
+    
   addBtn.addEventListener("click", () => {
     // hide & seek with the form
     addToy = !addToy;
@@ -49,10 +82,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   fetchToys()
-});
-
-// When a user submits the toy form, a POST request is sent to http://localhost:3000/toys and the new toy is added to Andy's Toy Collection.
-// The toy should conditionally render to the page.
-// In order to send a POST request via Fetch, give the Fetch a second argument of an object. This object should specify the method 
-// as POST and also provide the appropriate headers and the JSON-ified data for the request. 
-// If your request isn't working, make sure your header and keys match the documentation.
+})
